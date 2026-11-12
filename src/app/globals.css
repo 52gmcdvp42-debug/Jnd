@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body { @apply bg-snow text-navy antialiased; }
+  h1, h2, h3, h4 { @apply font-display tracking-tight; }
+  :focus-visible { @apply outline-none ring-2 ring-electric ring-offset-2; }
+  ::selection { @apply bg-electric text-white; }
+}
+
+@layer components {
+  .container-x { @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-primary { @apply btn bg-electric text-white shadow-sm hover:bg-electric-600; }
+  .btn-dark { @apply btn bg-navy text-snow hover:bg-navy-600; }
+  .btn-outline { @apply btn border border-silver-300 bg-white text-navy hover:border-navy; }
+  .btn-ghost-light { @apply btn border border-white/20 text-snow hover:bg-white/10; }
+  .btn-danger { @apply btn bg-red-600 text-white hover:bg-red-700; }
+  .btn-sm { @apply px-3 py-1.5 text-xs; }
+  .card { @apply rounded-xl border border-silver-300/60 bg-white shadow-sm; }
+  .label { @apply mb-1 block text-sm font-medium text-navy; }
+  .hint { @apply mt-1 text-xs text-silver-600; }
+  .input { @apply block w-full rounded-lg border border-silver-300 bg-white px-3 py-2 text-sm text-navy placeholder:text-silver focus:border-electric focus:outline-none focus:ring-2 focus:ring-electric/30; }
+  .badge { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium; }
+  .eyebrow { @apply text-xs font-semibold uppercase tracking-[0.2em] text-electric; }
+  .table { @apply w-full text-left text-sm; }
+  .table th { @apply border-b border-silver-300/70 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-silver-600; }
+  .table td { @apply border-b border-silver-300/40 px-3 py-2.5 align-middle; }
+  .prose-jnd { @apply max-w-none text-[15px] leading-relaxed text-navy-600; }
+  .prose-jnd h2 { @apply mb-3 mt-8 text-xl font-semibold text-navy; }
+  .prose-jnd h3 { @apply mb-2 mt-6 text-lg font-semibold text-navy; }
+  .prose-jnd p { @apply mb-4; }
+  .prose-jnd ul { @apply mb-4 list-disc space-y-1 pl-6; }
+}
+
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(146,155,170,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(146,155,170,0.08) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
