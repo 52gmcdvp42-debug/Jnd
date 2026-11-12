@@ -59,7 +59,7 @@ export default async function CoursePage({ params, searchParams }: { params: Pro
             {course.subtitle && <p className="mt-4 text-lg text-silver-300">{course.subtitle}</p>}
             <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-silver-300">
               <span>Nivel: {LEVEL_LABEL[course.level]}</span>
-              <span>{modules.length} módulos · {lessonsCount} lecciones</span>
+              <span>{modules.length} {modules.length === 1 ? "módulo" : "módulos"} · {lessonsCount} {lessonsCount === 1 ? "lección" : "lecciones"}</span>
               {totalSeconds > 0 && <span>{formatDuration(totalSeconds)} de vídeo</span>}
               {course.certificateEnabled && <span>Con certificado</span>}
             </div>
@@ -114,7 +114,7 @@ export default async function CoursePage({ params, searchParams }: { params: Pro
               <RichText text={course.description} className="prose-jnd mt-4" />
             </>
           )}
-          <h2 className="mt-10 text-2xl font-bold">Contenido</h2>
+          <h2 className={`${course.description ? "mt-10" : ""} text-2xl font-bold`}>Contenido</h2>
           <div className="mt-5 space-y-4">
             {modules.length === 0 && <p className="text-silver-600">El temario se publicará próximamente.</p>}
             {modules.map((m, i) => {
