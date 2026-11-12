@@ -58,8 +58,8 @@ export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
       data: { lastUsedAt: new Date(), expiresAt: new Date(Date.now() + SESSION_DAYS * 86400_000) },
     }).catch(() => {});
   }
-  const { disabledAt: _d, ...user } = session.user;
-  return user;
+  const { id, email, name, role, emailVerifiedAt } = session.user;
+  return { id, email, name, role, emailVerifiedAt };
 });
 
 export async function requireUser(nextPath?: string): Promise<SessionUser> {

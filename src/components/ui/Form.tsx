@@ -1,10 +1,12 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { createContext, startTransition, useActionState, useContext, useEffect, useRef } from "react";
 import { useFormStatus } from "react-dom";
 
 export type FormState = { ok?: boolean; error?: string; message?: string; fieldErrors?: Record<string, string> } | null;
 type Action = (prev: FormState, fd: FormData) => Promise<FormState>;
+
+const PendingContext = createContext(false);
 
 /** Formulario con estado (errores/éxito) para acciones de servidor. */
 export function Form({
@@ -20,7 +22,7 @@ export function Form({
   resetOnSuccess?: boolean;
   confirm?: string;
 }) {
-  const [state, formAction] = useActionState(action, null);
+  const [state, formAction, pending] = useActionState(action, null);
   const ref = useRef<HTMLFormElement>(null);
   useEffect(() => {
     if (state?.ok && resetOnSuccess) ref.current?.reset();
@@ -31,11 +33,17 @@ export function Form({
       action={formAction}
       className={className}
       onSubmit={(e) => {
-        if (confirm && !window.confirm(confirm)) e.preventDefault();
+        // Envío manual: evita que React vacíe el formulario si el servidor devuelve un error
+        e.preventDefault();
+        if (pending || (confirm && !window.confirm(confirm))) return;
+        const fd = new FormData(e.currentTarget, (e.nativeEvent as SubmitEvent).submitter);
+        startTransition(() => formAction(fd));
       }}
     >
-      {children}
-      <FormMessage state={state} />
+      <PendingContext.Provider value={pending}>
+        {children}
+        <FormMessage state={state} />
+      </PendingContext.Provider>
     </form>
   );
 }
@@ -58,7 +66,9 @@ export function FormMessage({ state }: { state: FormState }) {
 }
 
 export function Submit({ children, className = "btn-primary", pendingText = "Guardando…" }: { children: React.ReactNode; className?: string; pendingText?: string }) {
-  const { pending } = useFormStatus();
+  const status = useFormStatus();
+  const ctxPending = useContext(PendingContext);
+  const pending = status.pending || ctxPending;
   return (
     <button type="submit" className={className} disabled={pending}>
       {pending ? pendingText : children}

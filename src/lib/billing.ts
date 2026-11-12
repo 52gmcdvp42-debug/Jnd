@@ -184,7 +184,7 @@ async function upsertSubscription(sub: Stripe.Subscription) {
     create: { stripeSubscriptionId: sub.id, userId, planId, interval, ...data },
     update: data,
   });
-  if (!existing && data.status === "ACTIVE") {
+  if (data.status === "ACTIVE" && existing?.status !== "ACTIVE") {
     const user = await db.user.findUnique({ where: { id: userId } });
     const plan = await db.membershipPlan.findUnique({ where: { id: planId } });
     if (user && plan)

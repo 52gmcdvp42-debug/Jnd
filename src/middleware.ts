@@ -20,14 +20,16 @@ export function middleware(req: NextRequest) {
 
   const nonce = btoa(crypto.randomUUID());
   const dev = process.env.NODE_ENV !== "production";
+  // Orígenes adicionales para vídeo (p. ej. un CDN propio). Separados por espacios.
+  const extra = process.env.CSP_EXTRA_MEDIA_SOURCES ? ` ${process.env.CSP_EXTRA_MEDIA_SOURCES}` : "";
   const csp = [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${dev ? " 'unsafe-eval'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
     "font-src 'self' data:",
-    "media-src 'self' blob: https:",
-    "connect-src 'self' https:" + (dev ? " ws:" : ""),
+    `media-src 'self' blob: https:${extra}`,
+    `connect-src 'self' https:${extra}` + (dev ? " ws:" : ""),
     "worker-src 'self' blob:",
     "frame-src 'self' https://iframe.mediadelivery.net",
     "frame-ancestors 'none'",

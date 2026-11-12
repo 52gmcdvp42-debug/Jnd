@@ -24,8 +24,13 @@ export function RichText({ text, className = "prose-jnd" }: { text: string; clas
   for (const raw of lines) {
     const line = raw.trim();
     if (!line) flush();
-    else if (line.startsWith("### ")) (flush(), blocks.push(<h3 key={blocks.length}>{line.slice(4)}</h3>));
-    else if (line.startsWith("## ")) (flush(), blocks.push(<h2 key={blocks.length}>{line.slice(3)}</h2>));
+    else if (line.startsWith("### ")) {
+      flush();
+      blocks.push(<h3 key={blocks.length}>{line.slice(4)}</h3>);
+    } else if (line.startsWith("## ")) {
+      flush();
+      blocks.push(<h2 key={blocks.length}>{line.slice(3)}</h2>);
+    }
     else if (/^[-•*] /.test(line)) {
       if (para.length) { const p = para; para = []; blocks.push(<p key={blocks.length}>{p.join(" ")}</p>); }
       list.push(line.slice(2));
