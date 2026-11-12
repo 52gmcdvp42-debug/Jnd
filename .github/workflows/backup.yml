@@ -1,0 +1,41 @@
+# Copia de seguridad diaria de la base de datos de producción → bucket S3/R2 (cifrada).
+# Requiere secretos del repositorio: DATABASE_URL, BACKUP_PASSPHRASE, BACKUP_S3_URI,
+# BACKUP_S3_ENDPOINT (R2), AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY.
+# No se ejecuta hasta que configures esos secretos (si falta DATABASE_URL, termina sin hacer nada).
+name: Backup diario
+on:
+  schedule:
+    - cron: "17 3 * * *" # 03:17 UTC
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+      BACKUP_S3_URI: ${{ secrets.BACKUP_S3_URI }}
+      BACKUP_S3_ENDPOINT: ${{ secrets.BACKUP_S3_ENDPOINT }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: auto
+      STORAGE_DRIVER: s3 # los archivos de producción están en el bucket (ver docs/COPIAS_DE_SEGURIDAD.md)
+    steps:
+      - uses: actions/checkout@v4
+      - name: Comprobar configuración
+        id: cfg
+        run: |
+          if [ -z "$DATABASE_URL" ]; then echo "Secretos no configurados: se omite."; echo "skip=1" >> "$GITHUB_OUTPUT"; fi
+          if [ -n "$DATABASE_URL" ] && [ -z "$BACKUP_PASSPHRASE" ]; then echo "::error::Falta BACKUP_PASSPHRASE"; exit 1; fi
+      - name: Instalar cliente PostgreSQL 16
+        if: steps.cfg.outputs.skip != '1'
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-16
+      - name: Copia de seguridad
+        if: steps.cfg.outputs.skip != '1'
+        run: PATH="/usr/lib/postgresql/16/bin:$PATH" BACKUP_KEEP_DAYS=0 bash scripts/backup.sh
